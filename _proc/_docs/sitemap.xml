@@ -2,42 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://antoni0z.github.io/nbdev_rag/index.html</loc>
-    <lastmod>2023-12-27T11:37:46.191Z</lastmod>
-  </url>
-  <url>
-    <loc>https://antoni0z.github.io/nbdev_rag/core.html</loc>
-    <lastmod>2023-12-27T10:04:33.449Z</lastmod>
-  </url>
-  <url>
-    <loc>https://antoni0z.github.io/nbdev_rag/base.html</loc>
-    <lastmod>2023-12-27T11:37:50.491Z</lastmod>
+    <lastmod>2023-12-27T11:53:01.208Z</lastmod>
   </url>
   <url>
     <loc>https://antoni0z.github.io/nbdev_rag/utils.html</loc>
-    <lastmod>2023-12-27T11:37:55.751Z</lastmod>
+    <lastmod>2023-12-27T11:53:00.764Z</lastmod>
   </url>
   <url>
-    <loc>https://antoni0z.github.io/nbdev_rag/Untitled.html</loc>
-    <lastmod>2023-12-27T11:14:25.409Z</lastmod>
-  </url>
-  <url>
-    <loc>https://antoni0z.github.io/nbdev_rag/04_llm.html</loc>
-    <lastmod>2023-12-27T11:34:39.169Z</lastmod>
-  </url>
-  <url>
-    <loc>https://antoni0z.github.io/nbdev_rag/store.html</loc>
-    <lastmod>2023-12-27T11:37:56.507Z</lastmod>
+    <loc>https://antoni0z.github.io/nbdev_rag/base.html</loc>
+    <lastmod>2023-12-27T11:53:00.408Z</lastmod>
   </url>
   <url>
     <loc>https://antoni0z.github.io/nbdev_rag/context.html</loc>
-    <lastmod>2023-12-27T11:37:54.743Z</lastmod>
+    <lastmod>2023-12-27T11:53:00.228Z</lastmod>
   </url>
   <url>
-    <loc>https://antoni0z.github.io/nbdev_rag/04_llms.html</loc>
-    <lastmod>2023-12-27T11:34:26.629Z</lastmod>
+    <loc>https://antoni0z.github.io/nbdev_rag/store.html</loc>
+    <lastmod>2023-12-27T11:53:00.592Z</lastmod>
   </url>
   <url>
     <loc>https://antoni0z.github.io/nbdev_rag/llm.html</loc>
-    <lastmod>2023-12-27T11:37:31.235Z</lastmod>
+    <lastmod>2023-12-27T11:53:00.928Z</lastmod>
   </url>
 </urlset>
