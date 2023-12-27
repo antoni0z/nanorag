@@ -1,0 +1,9 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_base.ipynb
+      - 01_utils.ipynb
+      - 02_context.ipynb
+      - 03_store.ipynb
+      - 04_llm.ipynb
