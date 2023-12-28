@@ -2,8 +2,8 @@ project:
   output-dir: _docs
 
 website:
-  title: "nbdev_rag"
-  site-url: "https://antoni0z.github.io/nbdev_rag"
+  title: "nanorag"
+  site-url: "https://antoni0z.github.io/nanorag"
   description: "Testing doing nanorag with nbdev to try it out"
   repo-branch: main
-  repo-url: "https://github.com/antoni0z/nbdev_rag"
+  repo-url: "https://github.com/antoni0z/nanorag"
