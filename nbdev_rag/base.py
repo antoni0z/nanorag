@@ -6,6 +6,7 @@ __all__ = ['BaseNode', 'TextNode', 'Document']
 # %% ../nbs/00_base.ipynb 3
 from abc import ABC, abstractmethod
 from .utils import *
+import uuid
 
 # %% ../nbs/00_base.ipynb 4
 class BaseNode(ABC):

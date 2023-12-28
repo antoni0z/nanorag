@@ -7,3 +7,4 @@ website:
       - 02_context.ipynb
       - 03_store.ipynb
       - 04_llm.ipynb
+      - 05_loaders.ipynb

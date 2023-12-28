@@ -1,38 +1,17 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "nbdev_rag",
+    "objectID": "llm.html",
+    "href": "llm.html",
+    "title": "LLM",
     "section": "",
-    "text": "This file will become your README and also the index of your documentation."
+    "text": "source\n\nLLM\n\n LLM (model, tokenizer)\n\nClass for interacting and Loading llms, tested with hugging face ones and it works correctly\n\nsource\n\n\nPromptTemplate\n\n PromptTemplate (template='A user provided this instructions')\n\nClass for prompt templating and adding intructions for an LLM"
   },
   {
-    "objectID": "index.html#install",
-    "href": "index.html#install",
-    "title": "nbdev_rag",
-    "section": "Install",
-    "text": "Install\npip install nbdev_rag"
-  },
-  {
-    "objectID": "index.html#how-to-use",
-    "href": "index.html#how-to-use",
-    "title": "nbdev_rag",
-    "section": "How to use",
-    "text": "How to use\nFill me in please! Don’t forget code examples:\n\n1+1\n\n2"
-  },
-  {
-    "objectID": "utils.html",
-    "href": "utils.html",
-    "title": "Utils",
+    "objectID": "store.html",
+    "href": "store.html",
+    "title": "Store",
     "section": "",
-    "text": "source\n\nhash_input\n\n hash_input (input_data:str)"
-  },
-  {
-    "objectID": "base.html",
-    "href": "base.html",
-    "title": "base",
-    "section": "",
-    "text": "source\n\nBaseNode\n\n BaseNode (metadata, model_context, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[])\n\nLowest level abstraction for storing interrelated pieces of information, building block for other types of nodes.\n\nsource\n\n\nTextNode\n\n TextNode (text, model_context, metadata, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[], auto_embed=True)\n\nClass for creating chunks of Text that contain additional information like relationships of metadata, inheritance from BaseNode but geared specifically towards text\n\nsource\n\n\nDocument\n\n Document (metadata={}, name=None, text=None, prev_node=None,\n           next_node=None, parent_node=None, child_node=[], embedding=[])\n\nClass that serves as a way to group information that comes from different sources intended to be stored or integrated with other services"
+    "text": "source\n\nBaseDocumentStore\n\n BaseDocumentStore (documents:Dict[str,nbdev_rag.base.Document]={})\n\nBase class for document storage\n\nsource\n\n\nDocumentStore\n\n DocumentStore (documents:Dict[str,nbdev_rag.base.Document]={})\n\nKey value type document store that store documents by their id in a dictionary. Also checks for duplicates via hashing and doesn’t admit them"
   },
   {
     "objectID": "context.html",
@@ -42,17 +21,45 @@
     "text": "source\n\nModelContext\n\n ModelContext (llm, embedding, tokenizer)\n\nInitialize self. See help(type(self)) for accurate signature."
   },
   {
-    "objectID": "store.html",
-    "href": "store.html",
-    "title": "Store",
+    "objectID": "loaders.html",
+    "href": "loaders.html",
+    "title": "Loaders",
     "section": "",
-    "text": "class BaseDocumentStore(ABC):\n    \"\"\"\n    Base class for document storage\"\"\"\n    def __init__(self, documents : Dict[str, Document] = {}):\n        pass\n    @abstractmethod\n    def __call__(self, db): #Connect to backend and specific collection parameters\n        pass\n    @abstractmethod    \n    def add(self, document: Document, allow_duplicates = False):\n        pass\n    @abstractmethod \n    def ids(self):\n        pass\n    @abstractmethod    \n    def delete(self, ids: Union[List, str]):\n        pass\n    @abstractmethod\n    def get(self, ids: Union[UUID, List] = None):\n        pass\n\n\nclass DocumentStore(BaseDocumentStore):\n    \"\"\"Key value type document store that store documents by their id in a dictionary.\n    Also checks for duplicates via hashing and doesn't admit them\"\"\"\n    def __init__(self, documents : Dict[str, Document] = {}):\n        self.documents = documents\n\n    def __call__(self, db): #Connect to backend and specific collection parameters\n        pass\n        \n    def add(self, document: Document, allow_duplicates = False):\n        #Here check for docs with the same hash or id. If diff id and hash add\n        for stored_document in self.documents:\n            if self.documents[stored_document].hash == document.hash:\n                if allow_duplicates == True:\n                    self.documents[document.id] = document\n                    return f\"Document with duplicate hash {document.hash} has been added\"\n                return f\"You tried to add a duplicate document: {document.hash}\"\n            elif self.documents[stored_document].id == document.id:\n                self.documents[document.id] = document\n                return f\"Document with id {document.id} has been updated\"\n        self.documents[document.id] =  document\n\n    def ids(self):\n        doc_ids = [doc for doc in self.documents]\n        return doc_ids\n\n    def delete(self, ids: Union[List, str]):\n        deleted_docs = []\n        if isinstance(ids, List):\n            for id in ids:\n                deleted_doc = self.documents.pop(id, None)\n                if deleted_doc != None:\n                    deleted_docs.append(deleted_doc)\n        elif isinstance(ids, UUID):\n            deleted_doc = self.documents.pop(ids, None)\n            print(f'Ids are: {ids} and theoretically deleted doc is {deleted_doc}')\n            if deleted_doc != None:\n                deleted_docs.append(deleted_doc)\n        return f\"The following docs have been deleted {deleted_docs}\"\n        \n    def get(self, ids: Union[UUID, List] = None):\n        if ids == None:\n            ids = self.ids()\n        if isinstance(ids, List):\n            docs = [self.documents.get(id, None) for id in ids]\n            return docs\n        elif isinstance(ids, UUID):\n            return self.documents.get(ids, None)"
+    "text": "source\n\nPDFLoader\n\n PDFLoader (path_dir:str)\n\nAccepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval\n\nsource\n\n\nDocumentBridge\n\n DocumentBridge (documents:List, context:nbdev_rag.context.ModelContext)\n\nClass for connecting a list of documents into its corresponding Nodes and relationships"
   },
   {
-    "objectID": "llm.html",
-    "href": "llm.html",
-    "title": "LLM",
+    "objectID": "base.html",
+    "href": "base.html",
+    "title": "base",
     "section": "",
-    "text": "source\n\nLLM\n\n LLM (model, tokenizer)\n\nClass for interacting and Loading llms, tested with hugging face ones and it works correctly\n\nsource\n\n\nPromptTemplate\n\n PromptTemplate (template='A user provided this instructions')\n\nClass for prompt templating and adding intructions for an LLM"
+    "text": "source\n\nBaseNode\n\n BaseNode (metadata, model_context, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[])\n\nLowest level abstraction for storing interrelated pieces of information, building block for other types of nodes.\n\nsource\n\n\nTextNode\n\n TextNode (text, model_context, metadata, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[], auto_embed=True)\n\nClass for creating chunks of Text that contain additional information like relationships of metadata, inheritance from BaseNode but geared specifically towards text\n\nsource\n\n\nDocument\n\n Document (metadata={}, name=None, text=None, prev_node=None,\n           next_node=None, parent_node=None, child_node=[], embedding=[])\n\nClass that serves as a way to group information that comes from different sources intended to be stored or integrated with other services"
+  },
+  {
+    "objectID": "utils.html",
+    "href": "utils.html",
+    "title": "Utils",
+    "section": "",
+    "text": "source\n\nhash_input\n\n hash_input (input_data:str)"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "nbdev_rag",
+    "section": "",
+    "text": "pip install nbdev_rag"
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "nbdev_rag",
+    "section": "",
+    "text": "pip install nbdev_rag"
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "nbdev_rag",
+    "section": "How to use",
+    "text": "How to use\nFirst we can define a Document"
   }
 ]
