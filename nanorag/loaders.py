@@ -12,6 +12,7 @@ from typing import List
 import uuid
 from PIL import Image
 from io import BytesIO
+import sys
 
 # %% ../nbs/05_loaders.ipynb 5
 #For simplicity lets start with accepting a List. 
