@@ -34,25 +34,29 @@ class BaseDocumentStore(ABC):
 # %% ../nbs/03_store.ipynb 4
 class DocumentStore(BaseDocumentStore):
     """Key value type document store that store documents by their id in a dictionary.
-    Also checks for duplicates via hashing and doesn't admit them"""
-    def __init__(self, documents : Dict[str, Document] = {}):
-        self.documents = documents
+    Also checks for duplicates via hashing and doesn't admit them. Compatible with both nodes and documents."""
+    def __init__(self, documents : Union[List[Document], Document]= {}):
+        if isinstance(documents, List):
+            self.documents = {document.id: document for document in documents}
+        elif isinstance(documents, Document):
+            self.documents = {documents.id: documents}
 
     def __call__(self, db): #Connect to backend and specific collection parameters
         pass
         
-    def add(self, document: Document, allow_duplicates = False):
+    def add(self, document: Union[List[Document], Document]):
         #Here check for docs with the same hash or id. If diff id and hash add
-        for stored_document in self.documents:
-            if self.documents[stored_document].hash == document.hash:
-                if allow_duplicates == True:
+        if isinstance(document, list):
+            for doc in document:
+                self.add(doc)
+        else:
+            for stored_document in self.documents:
+                if self.documents[stored_document].hash == document.hash:
+                    return f"You tried to add a duplicate document: {document.hash}"
+                elif self.documents[stored_document].id == document.id:
                     self.documents[document.id] = document
-                    return f"Document with duplicate hash {document.hash} has been added"
-                return f"You tried to add a duplicate document: {document.hash}"
-            elif self.documents[stored_document].id == document.id:
-                self.documents[document.id] = document
-                return f"Document with id {document.id} has been updated"
-        self.documents[document.id] =  document
+                    return f"Document with id {document.id} has been updated"
+            self.documents[document.id] =  document
 
     def ids(self):
         doc_ids = [doc for doc in self.documents]
@@ -80,3 +84,4 @@ class DocumentStore(BaseDocumentStore):
             return docs
         elif isinstance(ids, UUID):
             return self.documents.get(ids, None)
+#NOTE: Could I store both nodes and docs in same store? 

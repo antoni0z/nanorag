@@ -10,6 +10,8 @@ from PyPDF2 import PdfReader
 import random
 from typing import List
 import uuid
+from PIL import Image
+from io import BytesIO
 
 # %% ../nbs/05_loaders.ipynb 5
 #For simplicity lets start with accepting a List. 
@@ -21,7 +23,8 @@ class PDFLoader:
             self.paths = [path for path in self.path_dir.iterdir() if path]
         else:
             self.paths = [self.path_dir]
-    
+        self.path = None
+        
     def pdf_validator(self, path):
         """Tries to read the pdf and returns a Bool value with the result"""
         try:
@@ -39,15 +42,17 @@ class PDFLoader:
             if is_valid:
                 reader = PdfReader(pdf_path)
                 valid_pdf_found = True
+                self.path = pdf_path
                 return reader
             else:
                 pdf_path.unlink()
                 self.paths.remove(pdf_path)  # Remove the invalid path from the list
-    
+        
         if not valid_pdf_found:
             return None
     def load_pdf(self, path):
         reader = PdfReader(path)
+        self.path = path
         return reader
     
     def get_documents(self, path = None):
@@ -69,7 +74,19 @@ class PDFLoader:
             doc = Document(**params)
             documents.append(doc)
         return documents
-        
+    def get_images(self, path = None):
+        #Can add some metadata like what page and location was found on. 
+        #Create Image Node with that kind of info. 
+        if path == None:
+            reader = self.load_random_pdf()
+        else:
+            reader = self.load_pdf(path)
+        images = []
+        for count, page in enumerate(reader.pages):
+            for image_file_object in page.images:
+                image = Image.open(BytesIO(image_file_object.data))
+                images.append(image)
+        return images
 
 # %% ../nbs/05_loaders.ipynb 6
 class DocumentBridge:
@@ -80,10 +97,10 @@ class DocumentBridge:
         else:
             raise "You have to include a List of documents"
         self.context = context
-    def nodes(self) -> List[TextNode]:
+    def nodes(self, chunk_size = 1024) -> List[TextNode]:
         """Brige a series of Documents into nodes linked by the end and start of the prev and next document. Great for linking together complex docs with structure
         such as pages or other info extracted first on a Document basis."""
-        doc_nodes_list = [doc.create_nodes_from_doc(self.context) for doc in self.documents]
+        doc_nodes_list = [doc.create_nodes_from_doc(self.context, chunk_size = chunk_size) for doc in self.documents]
         for i, node_list in enumerate(doc_nodes_list):
             if i == 0:
                 node_list[-1].next_node = doc_nodes_list[i + 1][0].id
@@ -93,7 +110,8 @@ class DocumentBridge:
                 node_list[0].prev_node = doc_nodes_list[i - 1][-1].id
         nodes = [node for node_list in doc_nodes_list for node in node_list]
         return nodes
-    def document(self) -> List[Document]:
+        
+    def join(self) -> Document:
         """Bridges a series of Documents into a single document. Great for storing sub-documents into a single one. Keeps some metadata of the documents into one. """
         #Store metadata about length, pages etc. For the later processing to be better. Maybe metadata about where each page started and ended in terms of characters could be good. 
         #see tradeoffs between this and diff docs pointing to a single reference. 
