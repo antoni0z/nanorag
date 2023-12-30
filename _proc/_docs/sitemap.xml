@@ -1,3 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/index.html</loc>
+    <lastmod>2023-12-30T13:19:26.934Z</lastmod>
+  </url>
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/utils.html</loc>
+    <lastmod>2023-12-30T13:19:26.494Z</lastmod>
+  </url>
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/base.html</loc>
+    <lastmod>2023-12-30T13:19:26.154Z</lastmod>
+  </url>
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/loaders.html</loc>
+    <lastmod>2023-12-30T13:19:25.802Z</lastmod>
+  </url>
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/context.html</loc>
+    <lastmod>2023-12-30T13:19:25.982Z</lastmod>
+  </url>
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/store.html</loc>
+    <lastmod>2023-12-30T13:19:26.326Z</lastmod>
+  </url>
+  <url>
+    <loc>https://antoni0z.github.io/nanorag/llm.html</loc>
+    <lastmod>2023-12-30T13:19:26.658Z</lastmod>
+  </url>
 </urlset>

@@ -14,7 +14,13 @@ from PIL import Image
 from io import BytesIO
 import sys
 
-# %% ../nbs/05_loaders.ipynb 5
+# %% ../nbs/05_loaders.ipynb 3
+from .store import *
+from .base import *
+from .context import *
+from .llm import *
+
+# %% ../nbs/05_loaders.ipynb 6
 #For simplicity lets start with accepting a List. 
 class PDFLoader:
     """Accepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval"""
@@ -89,7 +95,7 @@ class PDFLoader:
                 images.append(image)
         return images
 
-# %% ../nbs/05_loaders.ipynb 6
+# %% ../nbs/05_loaders.ipynb 7
 class DocumentBridge:
     """Class for connecting a list of documents into its corresponding Nodes and relationships"""
     def __init__(self, documents: List, context: ModelContext):
