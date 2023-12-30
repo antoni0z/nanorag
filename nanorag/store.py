@@ -5,6 +5,7 @@ __all__ = ['BaseDocumentStore', 'DocumentStore']
 
 # %% ../nbs/03_store.ipynb 2
 from .base import Document, abstractmethod, ABC
+from .context import ModelContext
 from typing import Union, List, Dict, Optional
 from uuid import UUID
 

@@ -4,9 +4,23 @@
 __all__ = ['ModelContext']
 
 # %% ../nbs/02_context.ipynb 2
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from sentence_transformers import SentenceTransformer
+import torch
+from .llm import LLM
+
+# %% ../nbs/02_context.ipynb 3
 class ModelContext:
-    def __init__(self, llm, embedding, tokenizer):
+    def __init__(self, llm = None, embedding = None, tokenizer = None):
         self.llm = llm
         self.embedding = embedding
         self.tokenizer = tokenizer
-        
+    def set_default(self):
+        self.tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", device_map = "cuda")
+        model = AutoModelForCausalLM.from_pretrained(
+            "mistralai/Mistral-7B-Instruct-v0.2",
+            device_map="cuda",
+            torch_dtype=torch.bfloat16,
+        )
+        self.embedding = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+        self.llm = LLM(model = model, tokenizer = self.tokenizer)

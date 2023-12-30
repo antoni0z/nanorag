@@ -107,7 +107,7 @@ class DocumentBridge:
     def nodes(self, chunk_size = 1024) -> List[TextNode]:
         """Brige a series of Documents into nodes linked by the end and start of the prev and next document. Great for linking together complex docs with structure
         such as pages or other info extracted first on a Document basis."""
-        doc_nodes_list = [doc.create_nodes_from_doc(self.context, chunk_size = chunk_size) for doc in self.documents]
+        doc_nodes_list = [doc.create_nodes_from_doc(model_context = self.context, chunk_size = chunk_size) for doc in self.documents]
         for i, node_list in enumerate(doc_nodes_list):
             if i == 0:
                 node_list[-1].next_node = doc_nodes_list[i + 1][0].id
