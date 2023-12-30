@@ -6,8 +6,10 @@ __all__ = ['BaseDocumentStore', 'DocumentStore']
 # %% ../nbs/03_store.ipynb 2
 from .base import Document, abstractmethod, ABC
 from .context import ModelContext
+from .loaders import PDFLoader
 from typing import Union, List, Dict, Optional
 from uuid import UUID
+import defaultdict
 
 # %% ../nbs/03_store.ipynb 3
 class BaseDocumentStore(ABC):
@@ -96,4 +98,14 @@ class DocumentStore(BaseDocumentStore):
                 return None
             return doc
         return None
+    def group_by_source_id(self, source_id = None): #Other type of filters can be added
+        grouped_documents = defaultdict(list)
+        for doc in self.documents.values():
+            if source_id == None:
+                grouped_documents[doc.source_id].append(doc)
+            elif doc.source_id not in grouped_documents or doc.source_id == source_id:
+                grouped_documents[doc.source_id].append(doc)
+        if source_id != None:
+            return grouped_documents[source_id]
+        return dict(grouped_documents)
 #NOTE: Could I store both nodes and docs in same store? 

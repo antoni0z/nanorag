@@ -74,23 +74,31 @@ class Document(BaseNode): #A document is a collection of nodes #Add hash to veri
     """
     Class that serves as a way to group information that comes from different sources intended to be stored or integrated with other services
     """
-    def __init__(self, metadata = {}, name = None, text = None, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = []):
+    def __init__(self, metadata = {}, name = None, text = None, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = [], source_id = None):
         super().__init__(metadata, prev_node, next_node, parent_node, child_node, embedding)
         self.nodes = []
         self.text = text
         self.name = name
+        if source_id == None:
+            self.source_id = self.__set_id()
+        else:
+            self.source_id = source_id
         self.hash = self.__calculate_hash()
-        #Maybe add some extra info like info_source that can help storing directly in db.
+        
+        #Maybe add some extra info like info_source id that can help storing directly in db.
         
     def __call__(self, nodes):
         self.nodes = nodes
         self.hash = self.__calculate_hash()
         
     def __repr__(self):
-        return f"Document(id = {self.id}, name = {self.name}, metadata = {self.metadata}, n_nodes = {len(self.nodes)})"
+        return f"Document(id = {self.id}, name = {self.name}, metadata = {self.metadata}, source_id = {self.source_id})"
     
     def __calculate_hash(self):
-        return hash_input(f"{self.name}{self.metadata}{self.nodes}{self.prev_node}{self.next_node}{self.parent_node}{self.child_node}")
+        return hash_input(f"{self.name}{self.metadata}{self.nodes}{self.prev_node}{self.next_node}{self.parent_node}{self.child_node}{self.source_id}")
+    
+    def __set_id(self):
+        return uuid.uuid4()
 
     def get_embedding(self):
         #Return the embedding of the nodes

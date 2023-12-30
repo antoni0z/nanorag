@@ -13,12 +13,9 @@ import uuid
 from PIL import Image
 from io import BytesIO
 import sys
+from .context import ModelContext
+from .base import Document, TextNode
 
-# %% ../nbs/05_loaders.ipynb 3
-from .store import *
-from .base import *
-from .context import *
-from .llm import *
 
 # %% ../nbs/05_loaders.ipynb 6
 #For simplicity lets start with accepting a List. 
@@ -66,12 +63,13 @@ class PDFLoader:
         """Get a List of Text Documents from a pdf Path."""
         documents = []
         #Extracting text and storing it in documents
+        source_id = self.__generate_id()
         if path == None:
             reader = self.load_random_pdf()
         else:
             reader = self.load_pdf(path)
         for i, page in enumerate(reader.pages):
-            params = {"metadata": {**{"page": i + 1}, **reader.metadata}, "text": page.extract_text()}
+            params = {"metadata": {**{"page": i + 1}, **reader.metadata}, "text": page.extract_text(), "source_id": source_id}
             if i == 0:
                 title = reader.metadata.get('title', None)
                 if title is None:
@@ -94,6 +92,8 @@ class PDFLoader:
                 image = Image.open(BytesIO(image_file_object.data))
                 images.append(image)
         return images
+    def __generate_id(self):
+        return str(uuid.uuid4())
 
 # %% ../nbs/05_loaders.ipynb 7
 class DocumentBridge:
@@ -104,7 +104,7 @@ class DocumentBridge:
         else:
             raise "You have to include a List of documents"
         self.context = context
-    def nodes(self, chunk_size = 1024) -> List[TextNode]:
+    def to_nodes(self, chunk_size = 1024) -> List[TextNode]:
         """Brige a series of Documents into nodes linked by the end and start of the prev and next document. Great for linking together complex docs with structure
         such as pages or other info extracted first on a Document basis."""
         doc_nodes_list = [doc.create_nodes_from_doc(model_context = self.context, chunk_size = chunk_size) for doc in self.documents]
@@ -118,8 +118,9 @@ class DocumentBridge:
         nodes = [node for node_list in doc_nodes_list for node in node_list]
         return nodes
         
-    def join(self) -> Document:
+    def to_doc(self) -> Document:
         """Bridges a series of Documents into a single document. Great for storing sub-documents into a single one. Keeps some metadata of the documents into one. """
+        #Can group docs by source id. 
         #Store metadata about length, pages etc. For the later processing to be better. Maybe metadata about where each page started and ended in terms of characters could be good. 
         #see tradeoffs between this and diff docs pointing to a single reference. 
         #In reality in the conversion to nodes all the info is kept. We can post-process there. 
