@@ -9,7 +9,7 @@ from .context import ModelContext
 from .loaders import PDFLoader
 from typing import Union, List, Dict, Optional
 from uuid import UUID
-import defaultdict
+from collections import defaultdict
 
 # %% ../nbs/03_store.ipynb 3
 class BaseDocumentStore(ABC):
