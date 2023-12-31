@@ -44,7 +44,9 @@ class BaseNode(ABC):
 class TextNode(BaseNode): #Add hash to verify content uniqueness
     """Class for creating chunks of Text that contain additional information like relationships of metadata, inheritance from
     BaseNode but geared specifically towards text"""
-    def __init__(self, text, model_context, metadata, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = [], auto_embed = True):
+    #TODO: Include doc_id
+    def __init__(self, text, model_context, metadata, prev_node = None, next_node = None, parent_node = None, 
+                 child_node = [], embedding = [], auto_embed = True, doc_id = None, source_id = None):
         super().__init__(metadata, model_context, prev_node, next_node, parent_node, child_node, embedding)
         self.text = text
         self.model_context = model_context
@@ -52,6 +54,8 @@ class TextNode(BaseNode): #Add hash to verify content uniqueness
         if auto_embed == True:
             self.create_embedding()
         self.hash = self.__calculate_hash()
+        self.doc_id = doc_id
+        self.source_id = source_id
 
     def __repr__(self):
         return f"TextNode(id = {self.id},text = {self.text},metadata = {self.metadata}, prev_node = {self.prev_node}, next_node = {self.next_node}, parent_node = {self.parent_node}, child_node = {self.child_node})"
@@ -74,8 +78,8 @@ class Document(BaseNode): #A document is a collection of nodes #Add hash to veri
     """
     Class that serves as a way to group information that comes from different sources intended to be stored or integrated with other services
     """
-    def __init__(self, metadata = {}, name = None, text = None, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = [], source_id = None):
-        super().__init__(metadata, prev_node, next_node, parent_node, child_node, embedding)
+    def __init__(self, metadata = {}, name = None, text = None, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = [], source_id = None, doc_separator = None):
+        super().__init__(metadata = metadata, prev_node = prev_node, next_node = next_node, parent_node = parent_node, child_node = child_node, embedding = embedding, model_context=None)
         self.nodes = []
         self.text = text
         self.name = name
@@ -84,6 +88,7 @@ class Document(BaseNode): #A document is a collection of nodes #Add hash to veri
         else:
             self.source_id = source_id
         self.hash = self.__calculate_hash()
+        self.doc_separator = doc_separator
         
         #Maybe add some extra info like info_source id that can help storing directly in db.
         
@@ -104,7 +109,7 @@ class Document(BaseNode): #A document is a collection of nodes #Add hash to veri
         #Return the embedding of the nodes
         pass
     
-    def create_nodes_from_doc(self,model_context, category = 'FILE', chunk_size = 1024): #TODO: Support adding new full metadata
+    def create_nodes_from_doc(self,model_context, chunk_size = 1024): #TODO: Support adding new full metadata
         nodes = []
         chunked_text = self.__chunk_text(chunk_size)
         existing_metadata = self.metadata
@@ -112,11 +117,11 @@ class Document(BaseNode): #A document is a collection of nodes #Add hash to veri
             if i == 0:
                  prev_node = None
                  next_node = None
-                 node_metadata = {**existing_metadata,**{'category' : category, 'node_height': 0, 'node_length':1}}
-                 nodes.append(TextNode(text = text, metadata = node_metadata, model_context = model_context))
+                 node_metadata = {**existing_metadata,**{'node_height': 0, 'node_length':1}}
+                 nodes.append(TextNode(text = text, metadata = node_metadata, model_context = model_context, doc_id=self.id, source_id=self.source_id))
             else:
-                 node_metadata = {**existing_metadata,**{'category' : category, 'node_height': 0, 'node_length':1}}
-                 node = TextNode(text = text, metadata = node_metadata, model_context = model_context, prev_node =  nodes[i - 1].id)
+                 node_metadata = {**existing_metadata,**{'node_height': 0, 'node_length':1}}
+                 node = TextNode(text = text, metadata = node_metadata, model_context = model_context, prev_node =  nodes[i - 1].id, doc_id=self.id, source_id=self.source_id)
                  nodes.append(node)
                  nodes[i - 1].next_node = node.id
         return nodes

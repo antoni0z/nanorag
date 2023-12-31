@@ -8,7 +8,7 @@ import PyPDF2
 from pathlib import Path
 from PyPDF2 import PdfReader
 import random
-from typing import List
+from typing import List, Union
 import uuid
 from PIL import Image
 from io import BytesIO
@@ -69,7 +69,7 @@ class PDFLoader:
         else:
             reader = self.load_pdf(path)
         for i, page in enumerate(reader.pages):
-            params = {"metadata": {**{"page": i + 1}, **reader.metadata}, "text": page.extract_text(), "source_id": source_id}
+            params = {"metadata": {**{"page": i + 1, "category": "PDF"}, **reader.metadata}, "text": page.extract_text(), "source_id": source_id}
             if i == 0:
                 title = reader.metadata.get('title', None)
                 if title is None:
@@ -98,30 +98,66 @@ class PDFLoader:
 # %% ../nbs/05_loaders.ipynb 7
 class DocumentBridge:
     """Class for connecting a list of documents into its corresponding Nodes and relationships"""
-    def __init__(self, documents: List, context: ModelContext):
+    def __init__(self, documents: Union[List[Document], Document], context: ModelContext):
         if isinstance(documents, List):
             self.documents = documents
         else:
-            raise "You have to include a List of documents"
+            self.documents = [documents]
         self.context = context
     def to_nodes(self, chunk_size = 1024) -> List[TextNode]:
         """Brige a series of Documents into nodes linked by the end and start of the prev and next document. Great for linking together complex docs with structure
         such as pages or other info extracted first on a Document basis."""
         doc_nodes_list = [doc.create_nodes_from_doc(model_context = self.context, chunk_size = chunk_size) for doc in self.documents]
-        for i, node_list in enumerate(doc_nodes_list):
-            if i == 0:
-                node_list[-1].next_node = doc_nodes_list[i + 1][0].id
-            else:
-                if i < len(doc_nodes_list) - 1:
+        if len(doc_nodes_list) > 1:
+            for i, node_list in enumerate(doc_nodes_list):
+                if i == 0:
                     node_list[-1].next_node = doc_nodes_list[i + 1][0].id
-                node_list[0].prev_node = doc_nodes_list[i - 1][-1].id
-        nodes = [node for node_list in doc_nodes_list for node in node_list]
+                else:
+                    if i < len(doc_nodes_list) - 1:
+                        node_list[-1].next_node = doc_nodes_list[i + 1][0].id
+                    node_list[0].prev_node = doc_nodes_list[i - 1][-1].id
+            nodes = [node for node_list in doc_nodes_list for node in node_list]
+        elif len(doc_nodes_list) == 1:
+            nodes = doc_nodes_list[0]
+            for i, node in enumerate(nodes):
+                if i == 0:
+                    node.prev_node = None
+                else:
+                    node.prev_node = nodes[i - 1].id
+                    if i < len(nodes) - 1:
+                        node.next_node = nodes[i + 1].id
         return nodes
         
-    def to_doc(self) -> Document:
-        """Bridges a series of Documents into a single document. Great for storing sub-documents into a single one. Keeps some metadata of the documents into one. """
-        #Can group docs by source id. 
-        #Store metadata about length, pages etc. For the later processing to be better. Maybe metadata about where each page started and ended in terms of characters could be good. 
-        #see tradeoffs between this and diff docs pointing to a single reference. 
-        #In reality in the conversion to nodes all the info is kept. We can post-process there. 
-        pass
+    def to_doc(self, include_children = False, 
+               separator = '\n-----------------------------------------------------------------------------------------\n') -> Document:
+        """Bridges a series of Documents into a single document. Great for storing sub-documents into a single one. Keeps some metadata of the documents into one. 
+        Use documents with the same source id to be included here. """
+        text = ''
+        for i, doc in enumerate(self.documents):
+            text += doc.text + separator
+        metadata = self.documents[0].metadata;metadata.pop('page', None); metadata['pages'] = i + 1    
+        document = Document(name = self.documents[0].name, text = text, metadata = metadata,
+                            source_id = self.documents[0].source_id, doc_separator = separator)
+        if include_children:
+            subdocument_ids = [subdoc.id for subdoc in self.documents] #This would be children.
+            document.child_node= subdocument_ids
+        return document
+    def to_subdocuments(self):
+        if len(self.documents) == 1:
+            single_document = self.documents[0]
+        else:
+            raise ValueError('Only one document can be converted to subdocuments')
+        separator = single_document.doc_separator
+        split_text = single_document.text.split(separator)
+        split_text = [text for i, text in enumerate(split_text) if text != '']
+        metadata = single_document.metadata
+        documents = []
+        for i, doc in enumerate(split_text):
+            document = Document(text = doc, name = single_document.name + f': {i + 1}', metadata = metadata.copy(), source_id=single_document.source_id)
+            document.metadata.pop('pages', None)
+            document.metadata['page'] = i + 1
+            if i != 0:
+                document.prev_node = documents[i - 1].id
+                documents[i - 1].next_node = document.id
+            documents.append(document)
+        return documents
