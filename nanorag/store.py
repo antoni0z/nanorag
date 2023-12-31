@@ -111,8 +111,9 @@ class DocumentStore(BaseDocumentStore):
 # %% ../nbs/03_store.ipynb 5
 import psycopg2
 import os
-db_uri = os.environ['POSTGRES_URI']
+db_uri = os.environ.get('POSTGRES_URI', None) 
 
+# %% ../nbs/03_store.ipynb 6
 class PostgresDocumentStore(BaseDocumentStore):
     
     def __init__(self,db_uri, table_name = 'documents'):
