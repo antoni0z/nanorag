@@ -10,6 +10,9 @@ from .loaders import PDFLoader
 from typing import Union, List, Dict, Optional
 from uuid import UUID
 from collections import defaultdict
+from psycopg2.extensions import AsIs
+import json
+
 
 # %% ../nbs/03_store.ipynb 3
 class BaseDocumentStore(ABC):
@@ -112,18 +115,31 @@ db_uri = os.environ['POSTGRES_URI']
 
 class PostgresDocumentStore(BaseDocumentStore):
     
-    def __init__(self,db_uri, documents : Union[List[Document], Document]= [], table_name = 'documents'):
-        if isinstance(documents, list):
-            self.documents = {document.id: document for document in documents}
-        elif isinstance(documents, Document):
-            self.documents = {documents.id: documents}
+    def __init__(self,db_uri, table_name = 'documents'):
         self.table_name = table_name
         self.conn = psycopg2.connect(db_uri)
         self.cur = self.conn.cursor()
         self.__create_if_not_exists()
 
-    def add(self):
-        pass
+    def add(self, documents: Union[List[Document], Document]):
+
+        if isinstance(documents, Document):
+            documents = [documents]
+
+        if isinstance(documents, list):
+            docs_to_insert = [(str(doc.id), str(doc.source_id), doc.name, doc.text, json.dumps(doc.metadata), doc.hash, doc.metadata.get('category', 'UNCATEGORIZED')) for doc in documents]
+            try:
+                self.cur.executemany(f"""
+                INSERT INTO {self.table_name} (id, source_id, name, text, metadata, hash, category)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+                """,docs_to_insert)
+                self.conn.commit()
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+                return None
+        doc_ids = [doc[0] for doc in docs_to_insert]
+        return f"The following documents have been added: {doc_ids}"
+        #For now not including any relationship
     def ids(self):
         pass
     def delete(self):
@@ -144,31 +160,32 @@ class PostgresDocumentStore(BaseDocumentStore):
         returns True if the table already exists and False if it was just created. 
         """
         try:
-            self.cur.execute("""
+            self.cur.execute(f"""
                 SELECT EXISTS (
                 SELECT FROM pg_tables
-                WHERE  schemaname = %s
-                AND    tablename  = %s
+                WHERE  schemaname = '{schema_name}'
+                AND    tablename  = '{self.table_name}'
                 );
-                """, (schema_name, self.table_name))
+                """)
 
             table_exists = self.cur.fetchone()[0]
 
             if not table_exists:
                 print('Does not exist')
-                self.cur.execute("""
-                CREATE TABLE %s (
+                self.cur.execute(f"""
+                CREATE TABLE {self.table_name} (
                     id UUID PRIMARY KEY,
                     source_id UUID NOT NULL,
+                    name TEXT,
                     text TEXT NOT NULL,
                     metadata JSONB,
                     hash TEXT UNIQUE NOT NULL,
                     prev_node UUID,
                     next_node UUID,
                     category VARCHAR(255),
-                    FOREIGN KEY (prev_node) REFERENCES %s(id),
-                    FOREIGN KEY (next_node) REFERENCES %s(id));
-                """, (self.table_name, self.table_name, self.table_name))
+                    FOREIGN KEY (prev_node) REFERENCES {self.table_name}(id),
+                    FOREIGN KEY (next_node) REFERENCES {self.table_name}(id));
+                """)
                 self.conn.commit()
                 return False
             else:
