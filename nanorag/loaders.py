@@ -21,13 +21,14 @@ from .base import Document, TextNode
 #For simplicity lets start with accepting a List. 
 class PDFLoader:
     """Accepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval"""
-    def __init__(self, path_dir: str):
+    def __init__(self, path_dir: str, store = None):
         self.path_dir = Path(path_dir)
         if self.path_dir.is_dir():
             self.paths = [path for path in self.path_dir.iterdir() if path]
         else:
             self.paths = [self.path_dir]
         self.path = None
+        self.store = store
         
     def pdf_validator(self, path):
         """Tries to read the pdf and returns a Bool value with the result"""
@@ -77,6 +78,7 @@ class PDFLoader:
             if title is not None:
                 params["name"] = title
             doc = Document(**params)
+            doc.store = self.store
             documents.append(doc)
         return documents
     def get_images(self, path = None):
