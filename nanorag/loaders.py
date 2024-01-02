@@ -139,7 +139,7 @@ class DocumentBridge:
             text += doc.text + separator
         metadata = self.documents[0].metadata;metadata.pop('page', None); metadata['pages'] = i + 1    
         document = Document(name = self.documents[0].name, text = text, metadata = metadata,
-                            source_id = self.documents[0].source_id, doc_separator = separator)
+                            source_id = self.documents[0].source_id, doc_separator = separator, store = self.documents[0].store)
         if include_children:
             subdocument_ids = [subdoc.id for subdoc in self.documents] #This would be children.
             document.child_node= subdocument_ids
@@ -155,7 +155,7 @@ class DocumentBridge:
         metadata = single_document.metadata
         documents = []
         for i, doc in enumerate(split_text):
-            document = Document(text = doc, name = single_document.name + f': {i + 1}', metadata = metadata.copy(), source_id=single_document.source_id)
+            document = Document(text = doc, name = single_document.name + f': {i + 1}', metadata = metadata.copy(), source_id=single_document.source_id, store = single_document.store)
             document.metadata.pop('pages', None)
             document.metadata['page'] = i + 1
             if i != 0:

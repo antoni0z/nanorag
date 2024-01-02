@@ -111,8 +111,7 @@ class DocumentStore(BaseDocumentStore):
 
 # %% ../nbs/03_store.ipynb 6
 #TODO: Handle doc modifications and sync with nodes.
-#TODO: Add docstore compatibility inside the document so can be called document.update(), document.delete(), document.save() and take effect on the database. 
-
+#TODO: Support for relationships in Store. 
 class PostgresDocumentStore(BaseDocumentStore):
     
     def __init__(self,db_uri, table_name = 'documents'):
