@@ -6,7 +6,7 @@ __all__ = ['db_uri', 'BaseDocumentStore', 'DocumentStore', 'PostgresDocumentStor
 # %% ../nbs/03_store.ipynb 2
 from .base import Document, abstractmethod, ABC
 from .context import ModelContext
-from .loaders import PDFLoader
+from .loaders import PDFLoader, DocumentBridge
 from typing import Union, List, Dict, Optional
 from uuid import UUID
 from collections import defaultdict
@@ -114,25 +114,40 @@ import os
 db_uri = os.environ.get('POSTGRES_URI', None) 
 
 # %% ../nbs/03_store.ipynb 6
+#TODO: Handle doc modifications and sync with nodes.
+
 class PostgresDocumentStore(BaseDocumentStore):
     
     def __init__(self,db_uri, table_name = 'documents'):
         self.table_name = table_name
+        self.schema_name = 'public'
         self.conn = psycopg2.connect(db_uri)
         self.cur = self.conn.cursor()
         self.__create_if_not_exists()
 
     def add(self, documents: Union[List[Document], Document]):
-
+        #TODO: Handle the case of a duplicate and a matching hash.
         if isinstance(documents, Document):
             documents = [documents]
 
         if isinstance(documents, list):
-            docs_to_insert = [(str(doc.id), str(doc.source_id), doc.name, doc.text, json.dumps(doc.metadata), doc.hash, doc.metadata.get('category', 'UNCATEGORIZED')) for doc in documents]
+            docs_to_insert = [
+            (
+                str(doc.id), 
+                str(doc.source_id), 
+                doc.name, 
+                doc.text.replace('\x00', ''),  # Remove null bytes
+                json.dumps(doc.metadata), 
+                doc.hash,
+                doc.metadata.get('category', 'UNCATEGORIZED'),
+                doc.doc_separator
+            ) 
+            for doc in documents
+            ]
             try:
                 self.cur.executemany(f"""
-                INSERT INTO {self.table_name} (id, source_id, name, text, metadata, hash, category)
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
+                INSERT INTO {self.table_name} (id, source_id, name, text, metadata, hash, category, doc_separator)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
                 """,docs_to_insert)
                 self.conn.commit()
             except Exception as e:
@@ -142,12 +157,59 @@ class PostgresDocumentStore(BaseDocumentStore):
         return f"The following documents have been added: {doc_ids}"
         #For now not including any relationship
     def ids(self):
+        try:
+            self.cur.execute(f"""
+            SELECT id
+            FROM {self.schema_name}.{self.table_name};
+            """)
+            result = self.cur.fetchall()
+            if len(result) == 0:
+                return None
+            return [doc[0] for doc in result]
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return None
+    def delete(self, ids: Union[List[str], str]):
+        
         pass
-    def delete(self):
-        pass
-    def get(self):
-        pass
-
+    def get(self, ids : Optional[Union[str, List[str]]] = None):
+        def convert_to_doc(result): 
+            id, source_id, name, text, metadata, category, doc_separator = result
+            doc = Document(id = id, source_id = source_id, name = name, text = text, metadata = metadata, 
+                            doc_separator = doc_separator)
+            doc.metadata['category'] = category
+            return doc
+        if ids:
+            try:
+                if isinstance(ids, str):
+                    ids = [ids]
+                if isinstance(ids, list):
+                    ids = ids
+                self.cur.execute(f"""SELECT id, source_id, name, text, metadata, category, doc_separator
+                                    FROM {self.schema_name}.{self.table_name}
+                                    WHERE id = ANY(%s::uuid[]);""", (ids,))
+                result = self.cur.fetchall()
+                if len(result) == 0:
+                    return None
+                documents = [convert_to_doc(doc) for doc in result]
+                return documents
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+                return None
+        else:
+            try:
+                self.cur.execute(f"""
+                SELECT id, source_id, name, text, metadata, category, doc_separator
+                FROM {self.schema_name}.{self.table_name};
+                """)
+                result = self.cur.fetchall()
+                if len(result) == 0:
+                    return None
+                documents = [convert_to_doc(doc) for doc in result]
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+                return None
+            return documents
 
     def __enter__(self):
         return self
@@ -155,7 +217,7 @@ class PostgresDocumentStore(BaseDocumentStore):
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-    def __create_if_not_exists(self, schema_name = 'public'):
+    def __create_if_not_exists(self):
         """
         Creates a table for storing documents if it doesn't exist in the database,
         returns True if the table already exists and False if it was just created. 
@@ -164,7 +226,7 @@ class PostgresDocumentStore(BaseDocumentStore):
             self.cur.execute(f"""
                 SELECT EXISTS (
                 SELECT FROM pg_tables
-                WHERE  schemaname = '{schema_name}'
+                WHERE  schemaname = '{self.schema_name}'
                 AND    tablename  = '{self.table_name}'
                 );
                 """)
@@ -184,6 +246,7 @@ class PostgresDocumentStore(BaseDocumentStore):
                     prev_node UUID,
                     next_node UUID,
                     category VARCHAR(255),
+                    doc_separator VARCHAR(255),
                     FOREIGN KEY (prev_node) REFERENCES {self.table_name}(id),
                     FOREIGN KEY (next_node) REFERENCES {self.table_name}(id));
                 """)
@@ -195,7 +258,7 @@ class PostgresDocumentStore(BaseDocumentStore):
             print(f"An error occurred: {str(e)}")
             return None
         
-    def close(self):
+    def close(self): #To use the syntax, with PostgresDocumentStore(db_uri) as store:
         if self.cur is not None:
             self.cur.close()
         if self.conn is not None:

@@ -16,7 +16,7 @@ class BaseNode(ABC):
     """
     Lowest level abstraction for storing interrelated pieces of information, building block for other types of nodes. 
     """
-    def __init__(self, metadata, model_context, prev_node=None, next_node=None, parent_node=None, child_node=[], embedding=[]):
+    def __init__(self, metadata, model_context, prev_node=None, next_node=None, parent_node=None, child_node=[], embedding=[], id = None):
         self.metadata = metadata
         self.model_context = model_context
         self.prev_node = prev_node  # In llama index they have relationships in one dict. I can try it.
@@ -24,7 +24,10 @@ class BaseNode(ABC):
         self.parent_node = parent_node
         self.child_node = child_node
         self.embedding = embedding
-        self.id = self.__set_id()
+        if id == None:
+            self.id = self.__set_id()
+        else:
+            self.id = id
 
     def __repr__(self):
         return f"BaseNode(id={self.id}, metadata={self.metadata}, prev_node={self.prev_node}, next_node={self.next_node}, parent_node={self.parent_node}, child_node={self.child_node})"
@@ -46,8 +49,10 @@ class TextNode(BaseNode): #Add hash to verify content uniqueness
     BaseNode but geared specifically towards text"""
     #TODO: Include doc_id
     def __init__(self, text, model_context, metadata, prev_node = None, next_node = None, parent_node = None, 
-                 child_node = [], embedding = [], auto_embed = True, doc_id = None, source_id = None):
-        super().__init__(metadata, model_context, prev_node, next_node, parent_node, child_node, embedding)
+                 child_node = [], embedding = [], auto_embed = True, doc_id = None, source_id = None, id = None):
+        super().__init__(metadata = metadata, model_context = model_context, 
+                         prev_node = prev_node, next_node = next_node, parent_node = parent_node, 
+                         child_node = child_node, embedding = embedding, id = id)
         self.text = text
         self.model_context = model_context
         self.embedding = None
@@ -78,8 +83,8 @@ class Document(BaseNode): #A document is a collection of nodes #Add hash to veri
     """
     Class that serves as a way to group information that comes from different sources intended to be stored or integrated with other services
     """
-    def __init__(self, metadata = {}, name = None, text = None, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = [], source_id = None, doc_separator = None):
-        super().__init__(metadata = metadata, prev_node = prev_node, next_node = next_node, parent_node = parent_node, child_node = child_node, embedding = embedding, model_context=None)
+    def __init__(self, metadata = {}, name = None, text = None, prev_node = None, next_node = None, parent_node = None, child_node = [], embedding = [], source_id = None, doc_separator = None, id = None):
+        super().__init__(metadata = metadata, prev_node = prev_node, next_node = next_node, parent_node = parent_node, child_node = child_node, embedding = embedding, model_context=None, id = id)
         self.nodes = []
         self.text = text
         self.name = name
