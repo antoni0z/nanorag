@@ -11,6 +11,7 @@ sys.path.append('..')
 from .utils import *
 
 # %% ../nbs/00_base.ipynb 4
+#TODO: Implement Reference to Vector Indices. 
 class BaseNode(ABC):
     """
     Lowest level abstraction for storing interrelated pieces of information, building block for other types of nodes. 
@@ -48,7 +49,8 @@ class TextNode(BaseNode): #Add hash to verify content uniqueness
     BaseNode but geared specifically towards text"""
     #TODO: Include doc_id
     def __init__(self, text, model_context, metadata, prev_node = None, next_node = None, parent_node = None, 
-                 child_node = [], embedding = [], auto_embed = True, doc_id = None, source_id = None, id = None):
+                 child_node = [], embedding = [], auto_embed = True, doc_id = None, source_id = None, id = None,
+                 idx_ref = None):
         super().__init__(metadata = metadata, model_context = model_context, 
                          prev_node = prev_node, next_node = next_node, parent_node = parent_node, 
                          child_node = child_node, embedding = embedding, id = id)
@@ -60,6 +62,7 @@ class TextNode(BaseNode): #Add hash to verify content uniqueness
         self.hash = self.__calculate_hash()
         self.doc_id = doc_id
         self.source_id = source_id
+        self.idx_ref = idx_ref
 
     def __repr__(self):
         return f"TextNode(id = {self.id},text = {self.text},metadata = {self.metadata}, prev_node = {self.prev_node}, next_node = {self.next_node}, parent_node = {self.parent_node}, child_node = {self.child_node})"

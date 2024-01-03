@@ -144,7 +144,9 @@ class DocumentBridge:
             subdocument_ids = [subdoc.id for subdoc in self.documents] #This would be children.
             document.child_node= subdocument_ids
         return document
-    def to_subdocuments(self):
+    def to_subdocs(self):
+        """Split a document based on its separator. It will split them by pages by default. Each
+        page ends with a specific separator."""
         if len(self.documents) == 1:
             single_document = self.documents[0]
         else:

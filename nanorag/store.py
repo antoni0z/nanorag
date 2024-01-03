@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['BaseDocumentStore', 'DocumentStore', 'PostgresDocumentStore']
 
-# %% ../nbs/03_store.ipynb 2
+# %% ../nbs/03_store.ipynb 3
 from .base import Document, abstractmethod, ABC
 from .context import ModelContext
 from .loaders import PDFLoader, DocumentBridge
@@ -16,7 +16,7 @@ from psycopg2.extensions import AsIs
 import json
 
 
-# %% ../nbs/03_store.ipynb 4
+# %% ../nbs/03_store.ipynb 5
 class BaseDocumentStore(ABC):
     """
     Base class for document storage"""
@@ -36,7 +36,7 @@ class BaseDocumentStore(ABC):
         pass
         
 
-# %% ../nbs/03_store.ipynb 5
+# %% ../nbs/03_store.ipynb 6
 class DocumentStore(BaseDocumentStore):
     """Key value type document store that store documents by their id in a dictionary.
     Also checks for duplicates via hashing and doesn't admit them. Compatible with both nodes and documents."""
@@ -109,7 +109,7 @@ class DocumentStore(BaseDocumentStore):
         return dict(grouped_documents)
 #NOTE: Could I store both nodes and docs in same store? 
 
-# %% ../nbs/03_store.ipynb 6
+# %% ../nbs/03_store.ipynb 7
 #TODO: Handle doc modifications and sync with nodes.
 #TODO: Support for relationships in Store. 
 class PostgresDocumentStore(BaseDocumentStore):
@@ -276,4 +276,6 @@ class PostgresDocumentStore(BaseDocumentStore):
             self.cur.close()
         if self.conn is not None:
             self.conn.close()
-
+#TODO: Great HTML loader. Test diff approaches. 
+            
+#TODO: Great Markdown loader. Test diff approaches.

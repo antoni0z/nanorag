@@ -32,28 +32,28 @@
     "href": "base.html",
     "title": "base",
     "section": "",
-    "text": "source\n\nBaseNode\n\n BaseNode (metadata, model_context, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[])\n\nLowest level abstraction for storing interrelated pieces of information, building block for other types of nodes.\n\nsource\n\n\nTextNode\n\n TextNode (text, model_context, metadata, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[], auto_embed=True)\n\nClass for creating chunks of Text that contain additional information like relationships of metadata, inheritance from BaseNode but geared specifically towards text\n\nsource\n\n\nDocument\n\n Document (metadata={}, name=None, text=None, prev_node=None,\n           next_node=None, parent_node=None, child_node=[], embedding=[])\n\nClass that serves as a way to group information that comes from different sources intended to be stored or integrated with other services"
+    "text": "source\n\nBaseNode\n\n BaseNode (metadata, model_context, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[], id=None)\n\nLowest level abstraction for storing interrelated pieces of information, building block for other types of nodes.\n\nsource\n\n\nTextNode\n\n TextNode (text, model_context, metadata, prev_node=None, next_node=None,\n           parent_node=None, child_node=[], embedding=[], auto_embed=True,\n           doc_id=None, source_id=None, id=None)\n\nClass for creating chunks of Text that contain additional information like relationships of metadata, inheritance from BaseNode but geared specifically towards text\n\nsource\n\n\nDocument\n\n Document (metadata={}, name=None, text=None, prev_node=None,\n           next_node=None, parent_node=None, child_node=[], embedding=[],\n           source_id=None, doc_separator=None, id=None, nodes=[],\n           store=None)\n\nClass that serves as a way to group information that comes from different sources intended to be stored or integrated with other services. It serves as the centralized source of truth of the information that is transformed into nodes. It can be used to store the information of a document, a webpage, pdf or any other source of information. The hash is recalculated once the info is changed and serves as an interface to docstore."
   },
   {
     "objectID": "loaders.html",
     "href": "loaders.html",
     "title": "Loaders",
     "section": "",
-    "text": "source\n\nPDFLoader\n\n PDFLoader (path_dir:str)\n\nAccepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval\n\nsource\n\n\nDocumentBridge\n\n DocumentBridge (documents:List, context:nanorag.context.ModelContext)\n\nClass for connecting a list of documents into its corresponding Nodes and relationships"
+    "text": "source\n\nPDFLoader\n\n PDFLoader (path_dir:str, store=None)\n\nAccepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval\n\nsource\n\n\nDocumentBridge\n\n DocumentBridge\n                 (documents:Union[List[nanorag.base.Document],nanorag.base\n                 .Document], context:nanorag.context.ModelContext)\n\nClass for connecting a list of documents into its corresponding Nodes and relationships"
   },
   {
     "objectID": "context.html",
     "href": "context.html",
     "title": "Model Context",
     "section": "",
-    "text": "source\n\nModelContext\n\n ModelContext (llm, embedding, tokenizer)\n\nInitialize self. See help(type(self)) for accurate signature."
+    "text": "source\n\nModelContext\n\n ModelContext (llm=None, embedding=None, tokenizer=None)\n\nInitialize self. See help(type(self)) for accurate signature."
   },
   {
     "objectID": "store.html",
     "href": "store.html",
     "title": "Store",
     "section": "",
-    "text": "source\n\nBaseDocumentStore\n\n BaseDocumentStore (documents:Dict[str,nanorag.base.Document]={})\n\nBase class for document storage\n\nsource\n\n\nDocumentStore\n\n DocumentStore\n                (documents:Union[List[nanorag.base.Document],nanorag.base.\n                Document]={})\n\nKey value type document store that store documents by their id in a dictionary. Also checks for duplicates via hashing and doesn’t admit them. Compatible with both nodes and documents."
+    "text": "from nbdev.showdoc import *\n\n\nsource\n\nBaseDocumentStore\n\n BaseDocumentStore (documents:Dict[str,nanorag.base.Document]={})\n\nBase class for document storage\n\nsource\n\n\nDocumentStore\n\n DocumentStore\n                (documents:Union[List[nanorag.base.Document],nanorag.base.\n                Document]=[])\n\nKey value type document store that store documents by their id in a dictionary. Also checks for duplicates via hashing and doesn’t admit them. Compatible with both nodes and documents.\n\nsource\n\n\nPostgresDocumentStore\n\n PostgresDocumentStore (db_uri, table_name='documents')\n\nBase class for document storage"
   },
   {
     "objectID": "llm.html",
