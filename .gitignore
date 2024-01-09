@@ -70,14 +70,14 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-
+build
 # PyBuilder
 .pybuilder/
 target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
+venv
 # IPython
 profile_default/
 ipython_config.py

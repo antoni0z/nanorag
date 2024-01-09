@@ -188,10 +188,15 @@ class PostgresDocumentStore(BaseDocumentStore):
     def get(self, ids : Optional[Union[str, List[str]]] = None):
         def convert_to_doc(result): 
             id, source_id, name, text, metadata, category, doc_separator = result
-            doc = Document(id = id, source_id = source_id, name = name, text = text, metadata = metadata, 
-                            doc_separator = doc_separator, store = self)
-            doc.metadata['category'] = category
-            return doc
+            doc = Document(id = id if id else None, 
+                        source_id = source_id if source_id else None, 
+                        name = name if name else None, 
+                        text = text if text else None, 
+                        metadata = metadata if metadata else None, 
+                        doc_separator = doc_separator if doc_separator else None, 
+                        store = self)
+            doc.metadata['category'] = category if category else None
+        return doc
         if ids:
             try:
                 if isinstance(ids, str):
