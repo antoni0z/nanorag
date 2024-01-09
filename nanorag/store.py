@@ -192,21 +192,25 @@ class PostgresDocumentStore(BaseDocumentStore):
                         source_id = source_id if source_id else None, 
                         name = name if name else None, 
                         text = text if text else None, 
-                        metadata = metadata if metadata else None, 
+                        metadata = metadata if metadata else {}, 
                         doc_separator = doc_separator if doc_separator else None, 
                         store = self)
-            doc.metadata['category'] = category if category else None
+            if category:
+                doc.metadata['category'] = category
             return doc
         if ids:
             try:
                 if isinstance(ids, str):
                     ids = [ids]
+                if isinstance(ids, UUID):
+                    ids = [str(ids)]
                 if isinstance(ids, list):
                     ids = ids
                 self.cur.execute(f"""SELECT id, source_id, name, text, metadata, category, doc_separator
                                     FROM {self.schema_name}.{self.table_name}
                                     WHERE id = ANY(%s::uuid[]);""", (ids,))
                 result = self.cur.fetchall()
+                print('Result is', result)
                 if len(result) == 0:
                     return None
                 documents = [convert_to_doc(doc) for doc in result]
