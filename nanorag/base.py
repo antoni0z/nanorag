@@ -10,7 +10,7 @@ import sys
 sys.path.append('..')
 from .utils import *
 
-# %% ../nbs/00_base.ipynb 4
+# %% ../nbs/00_base.ipynb 5
 #TODO: Implement Reference to Vector Indices. 
 class BaseNode(ABC):
     """
@@ -42,8 +42,11 @@ class BaseNode(ABC):
     def get_embedding(self):
         # Return the embeddings stored
         pass
+    @abstractmethod
+    def get_metadata_str(self):
+        pass
 
-# %% ../nbs/00_base.ipynb 5
+# %% ../nbs/00_base.ipynb 6
 class TextNode(BaseNode): #Add hash to verify content uniqueness
     """Class for creating chunks of Text that contain additional information like relationships of metadata, inheritance from
     BaseNode but geared specifically towards text"""
@@ -75,11 +78,12 @@ class TextNode(BaseNode): #Add hash to verify content uniqueness
             raise ValueError("embedding not set.")
         return self.embedding
         #Embedding for text. Try one for image.
-
+    def get_metadata_str(self):
+        return '\n'.join([DEFAULT_METADATA_TMPL.format(key=key, value=value) for key, value in self.metadata.items()])
     def __calculate_hash(self):
         return hash_input(f"{self.text}{self.metadata}{self.prev_node}{self.next_node}{self.parent_node}{self.child_node}")
 
-# %% ../nbs/00_base.ipynb 6
+# %% ../nbs/00_base.ipynb 7
 class Document(BaseNode): 
     # A document is a collection of nodes. Add hash to verify content uniqueness.
     # Also can be the source of information.
@@ -107,6 +111,10 @@ class Document(BaseNode):
         self.hash = self.__calculate_hash()
         self._initialized = True
         self.store = store
+
+    @property
+    def id_(self):
+        return str(self.id)
 
     @property
     def text(self):
@@ -194,6 +202,8 @@ class Document(BaseNode):
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
+    def get_metadata_str(self):
+        return '\n'.join([DEFAULT_METADATA_TMPL.format(key=key, value=value) for key, value in self.metadata.items()])
     
     def save(self):
         self.store.add(self)
