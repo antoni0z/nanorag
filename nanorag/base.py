@@ -78,7 +78,7 @@ class TextNode(BaseNode): #Add hash to verify content uniqueness
             raise ValueError("embedding not set.")
         return self.embedding
         #Embedding for text. Try one for image.
-    def get_metadata_str(self):
+    def get_metadata_str(self, mode = None):
         return '\n'.join([DEFAULT_METADATA_TMPL.format(key=key, value=value) for key, value in self.metadata.items()])
     def __calculate_hash(self):
         return hash_input(f"{self.text}{self.metadata}{self.prev_node}{self.next_node}{self.parent_node}{self.child_node}")
@@ -202,7 +202,7 @@ class Document(BaseNode):
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
-    def get_metadata_str(self):
+    def get_metadata_str(self, mode = None):
         return '\n'.join([DEFAULT_METADATA_TMPL.format(key=key, value=value) for key, value in self.metadata.items()])
     
     def save(self):
