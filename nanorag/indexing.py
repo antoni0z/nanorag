@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['context', 'store', 'VectorIndex']
 
-# %% ../nbs/06_indexing.ipynb 1
+# %% ../nbs/06_indexing.ipynb 2
 from .base import *
 from .store import *
 from .context import *
@@ -12,13 +12,13 @@ from .loaders import *
 from typing import Union, List, Dict, Tuple, Optional, Any
 import numpy as np
 
-# %% ../nbs/06_indexing.ipynb 2
+# %% ../nbs/06_indexing.ipynb 3
 #| eval: false
 context = ModelContext()
 context.set_default()
 store = DocumentStore()
 
-# %% ../nbs/06_indexing.ipynb 5
+# %% ../nbs/06_indexing.ipynb 6
 class VectorIndex: #Compatible with TextNode right now
     def __init__(self, context): #May not be needed in postgres. 
         self.node_to_idx = {}
