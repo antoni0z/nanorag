@@ -196,7 +196,7 @@ class PostgresDocumentStore(BaseDocumentStore):
                         doc_separator = doc_separator if doc_separator else None, 
                         store = self)
             doc.metadata['category'] = category if category else None
-        return doc
+            return doc
         if ids:
             try:
                 if isinstance(ids, str):
