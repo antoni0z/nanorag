@@ -23,6 +23,7 @@ store = DocumentStore()
 class VectorNodesIndex: #Compatible with TextNode right now. Storage of reference of certain nodes.
     #Try out with SVM retrieval strategy and other ones. 
     #Question. Treat docstore the
+    #TODO: Proper context validation
     """Inside here the embeddings stored are normalized. So when doing operations with vectors has to be kept into account. """
     def __init__(self, context): #May not be needed in postgres. 
         self.idx_to_node = {}
@@ -36,10 +37,6 @@ class VectorNodesIndex: #Compatible with TextNode right now. Storage of referenc
             self.embeddings = np.array([])
         self.retrieval_strategies = {
             "dot_product": self.retrieve_dot_product,
-        }
-        self.metrics = {
-            "distance": self.cosine_distance,
-            "similarity": self.cosine_similarity
         }
 
     def add(self, nodes: Union[TextNode, List[TextNode]]): #Embed with non excluded content. 
@@ -66,20 +63,16 @@ class VectorNodesIndex: #Compatible with TextNode right now. Storage of referenc
     def get_embedding(self, idx_ref: Union[List[int], int]):
         """Providing the idx_ref of the node, or nodes get the embedding"""
         if isinstance(idx_ref, np.int64) or isinstance(idx_ref, int):
-            idx_ref = np.array([idx_ref], dtype = np.int64)
+            idx_ref = np.array([idx_ref], dtype = np.issubdtype(type(idx_ref), np.integer))
         if isinstance(idx_ref, list):
             idx_ref = np.array(idx_ref, dtype= np.int64)
         if isinstance(idx_ref, np.ndarray):
             return self.embeddings[idx_ref]
 
-    def retrieve(self, query_str: List[str], top_k: int = 10, strategy = 'dot_product'):
-        #TODO: Add the score to the nodes. 
-        """Query the index with a list of strings. Returns the top_k results."""
+    def retrieve(self, query_str: List[str], top_k: int = 10, strategy: str = 'dot_product'):
         query_embedding = self.context.embedding.encode(query_str)
-        if strategy and strategy in self.retrieval_strategies:
-            retrieve_method = self.retrieval_strategies[strategy]
-        else:
-            retrieve_method = self.retrieval_strategies[strategy]
+        query_embedding = query_embedding / np.linalg.norm(query_embedding)  # Ensure normalization
+        retrieve_method = self.retrieval_strategies.get(strategy, self.retrieve_dot_product)
         top_k_idx_matches, top_k_scores = retrieve_method(query_embedding, top_k)
         nodes = self.get_node_ids(top_k_idx_matches)
         return nodes, top_k_scores
@@ -93,6 +86,3 @@ class VectorNodesIndex: #Compatible with TextNode right now. Storage of referenc
     
     def cosine_similarity(self,vecA, vecB):
         return np.dot(vecA, vecB)
-    
-    def cosine_distance(self, vecA, vecB):
-        return 1 - self.cosine_similarity(vecA, vecB)
