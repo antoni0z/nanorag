@@ -4,7 +4,6 @@
 __all__ = ['PDFLoader', 'DocumentBridge']
 
 # %% ../nbs/05_loaders.ipynb 2
-import PyPDF2
 from pathlib import Path
 from pypdf import PdfReader
 import random
@@ -12,12 +11,9 @@ from typing import List, Union
 import uuid
 from PIL import Image
 from io import BytesIO
-import sys
+import sys, platform, os
 from .context import ModelContext
 from .base import Document, TextNode
-import os
-import platform
-import sys
 
 # %% ../nbs/05_loaders.ipynb 6
 #For simplicity lets start with accepting a List. 
