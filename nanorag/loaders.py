@@ -6,7 +6,7 @@ __all__ = ['PDFLoader', 'DocumentBridge']
 # %% ../nbs/05_loaders.ipynb 2
 import PyPDF2
 from pathlib import Path
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 import random
 from typing import List, Union
 import uuid
@@ -15,7 +15,9 @@ from io import BytesIO
 import sys
 from .context import ModelContext
 from .base import Document, TextNode
-
+import os
+import platform
+import sys
 
 # %% ../nbs/05_loaders.ipynb 6
 #For simplicity lets start with accepting a List. 
@@ -29,6 +31,9 @@ class PDFLoader:
             self.paths = [self.path_dir]
         self.path = None
         self.store = store
+
+    def get_tables(self, path = None):
+        pass
         
     def pdf_validator(self, path):
         """Tries to read the pdf and returns a Bool value with the result"""
@@ -60,6 +65,23 @@ class PDFLoader:
         self.path = path
         return reader
     
+    def format_reader_metadata(self, reader, include_local_path = True):
+        #Format the metadata of the pdf. 
+        keys_to_include = ["title", "author", "subject","creator", "producer","creation_date", "modification_date"]
+        formatted_metadata = {}
+        for key in keys_to_include:
+            pdf_key = "/" + key.capitalize()
+            formatted_metadata[pdf_key] = getattr(reader.metadata, key, '')
+        if include_local_path:
+            formatted_metadata['file_path'] = self.path
+            formatted_metadata['file_name'] = self.path.name
+            # Retrieve and add system information
+            formatted_metadata['/SystemInfo'] = {
+                'os_type': platform.system(),
+                'working_directory': os.getcwd()
+            }
+        return formatted_metadata
+    
     def get_documents(self, path = None):
         """Get a List of Text Documents from a pdf Path."""
         documents = []
@@ -69,10 +91,13 @@ class PDFLoader:
             reader = self.load_random_pdf()
         else:
             reader = self.load_pdf(path)
+
+        formatted_metadata = self.format_reader_metadata(reader)
         for i, page in enumerate(reader.pages):
-            params = {"metadata": {**{"page": i + 1, "category": "PDF"}, **reader.metadata}, "text": page.extract_text(), "source_id": source_id}
+            params = {"metadata": {**{"page": i + 1, "category": "PDF"}, **formatted_metadata}, "text": page.extract_text(), "source_id": source_id}
+            #Add option to handle where it comes from
             if i == 0:
-                title = reader.metadata.get('title', None)
+                title = formatted_metadata.get('/Title', None)
                 if title is None:
                     title = params['text'].split('\n')[0]        
             if title is not None:
