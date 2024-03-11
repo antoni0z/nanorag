@@ -15,7 +15,7 @@ import sys, platform, os
 from .context import ModelContext
 from .base import Document, TextNode
 
-# %% ../nbs/05_loaders.ipynb 6
+# %% ../nbs/05_loaders.ipynb 5
 #For simplicity lets start with accepting a List. 
 class PDFLoader:
     """Accepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval"""
@@ -118,7 +118,7 @@ class PDFLoader:
     def __generate_id(self):
         return str(uuid.uuid4())
 
-# %% ../nbs/05_loaders.ipynb 7
+# %% ../nbs/05_loaders.ipynb 6
 class DocumentBridge:
     """Class for connecting a list of documents into its corresponding Nodes and relationships"""
     def __init__(self, documents: Union[List[Document], Document], context: ModelContext):

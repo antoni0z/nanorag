@@ -13,12 +13,14 @@ class LLM:
         self.model = model
         self.tokenizer = tokenizer
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model.to(self.device)
+        if hasattr(self.model, "is_quantized") and not self.model.is_quantized:
+            self.model.to(self.device)
 
     def __call__(self, prompt, max_length=100):
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(self.device)
-        output_ids = self.model.generate(input_ids=input_ids, max_length=max_length)
-        return self.tokenizer.decode(output_ids[0], skip_special_tokens=True).strip(prompt)
+        output_ids = self.model.generate(input_ids=input_ids, max_length=max_length, eos_token_id=self.tokenizer.eos_token_id, pad_token_id=self.tokenizer.pad_token_id)
+        response = self.tokenizer.decode(output_ids[0], skip_special_tokens=True).strip(prompt)
+        return response
 
 # %% ../nbs/04_llm.ipynb 4
 class PromptTemplate:
