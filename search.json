@@ -1,0 +1,122 @@
+[
+  {
+    "objectID": "indexing.html",
+    "href": "indexing.html",
+    "title": "Indexing",
+    "section": "",
+    "text": "#context = ModelContext()\n#context.set_default()\n#store = DocumentStore()\n\n\n\n\nFor testing I would start exploring by having a document I want to be able to retrieve information from.\nMy naive implementation would be an index for the embedding and mapping with the node index. Lets try that.\nTodo:\n\nTry out different scoring strategies weighting other type of things, like metadata similarity, options that have been picked by an LLM and such.\nDocker container to rapidly deploy agents.\nSupport own models apart from sentence transformer models.\n\n\n#Won't be used for now but serves for dependency injection for the index, to try diff retrieval strategies and combine them.\n#Will separate the retrieval strategies in the future.  \nclass Retriever(ABC):\n    @abstractmethod\n    def retrieve(self, query_embedding, embeddings, top_k):\n        pass\n\n\nsource\n\nVectorNodesIndex\n\n VectorNodesIndex (context=None)\n\nInside here the embeddings stored are normalized. So when doing operations with vectors has to be kept into account.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ncontext\nNoneType\nNone\nMay not be needed in postgres.",
+    "crumbs": [
+      "Indexing"
+    ]
+  },
+  {
+    "objectID": "base.html",
+    "href": "base.html",
+    "title": "base",
+    "section": "",
+    "text": "source",
+    "crumbs": [
+      "base"
+    ]
+  },
+  {
+    "objectID": "base.html#imagining-that-there-is-a-list-of-nodes-for-the-first-case.",
+    "href": "base.html#imagining-that-there-is-a-list-of-nodes-for-the-first-case.",
+    "title": "base",
+    "section": "Imagining that there is a list of Nodes, for the first case.",
+    "text": "Imagining that there is a list of Nodes, for the first case.\nTODO: Create struct to handle dfs under the hood. Using polars.\n\nAllow switch back and force from nodes to dataframes for things like time sorting or other strategies that can be tried out for retrieval.\n\nFirst we need keys to look for that a TextNode could have to add it to a df.\nEach key of the metadata must be converted to other value. We will convert every column that actually exists\nSee how to make it accept nodes and documents.\nThe TableIndex is both the struct and the index, an hybrid that can serve for distributed storage as pillow.",
+    "crumbs": [
+      "base"
+    ]
+  },
+  {
+    "objectID": "utils.html",
+    "href": "utils.html",
+    "title": "Utils",
+    "section": "",
+    "text": "source\n\nhash_input\n\n hash_input (input_data:str)",
+    "crumbs": [
+      "Utils"
+    ]
+  },
+  {
+    "objectID": "llm.html",
+    "href": "llm.html",
+    "title": "LLM",
+    "section": "",
+    "text": "source\n\nLLM\n\n LLM (model, tokenizer)\n\nClass for interacting and Loading llms, tested with hugging face ones and it works correctly\n\nsource\n\n\nPromptTemplate\n\n PromptTemplate (template='A user provided this instructions')\n\nClass for prompt templating and adding intructions for an LLM",
+    "crumbs": [
+      "LLM"
+    ]
+  },
+  {
+    "objectID": "loaders.html",
+    "href": "loaders.html",
+    "title": "Loaders",
+    "section": "",
+    "text": "source\n\nPDFLoader\n\n PDFLoader (path_dir:str, store=None)\n\nAccepts a dir or single path and converts its contents into documents that can be later used for storage and retrieval\n\nsource\n\n\nDocumentBridge\n\n DocumentBridge\n                 (documents:Union[List[nanorag.base.Document],nanorag.base\n                 .Document], context:nanorag.context.ModelContext)\n\nClass for connecting a list of documents into its corresponding Nodes and relationships",
+    "crumbs": [
+      "Loaders"
+    ]
+  },
+  {
+    "objectID": "context.html",
+    "href": "context.html",
+    "title": "Model Context",
+    "section": "",
+    "text": "source\n\nModelContext\n\n ModelContext (llm=None, embedding=None, tokenizer=None)\n\nInitialize self. See help(type(self)) for accurate signature.",
+    "crumbs": [
+      "Model Context"
+    ]
+  },
+  {
+    "objectID": "store.html",
+    "href": "store.html",
+    "title": "Store",
+    "section": "",
+    "text": "from nbdev.showdoc import *\n\n\nsource\n\nBaseDocumentStore\n\n BaseDocumentStore (documents:Dict[str,nanorag.base.Document]={})\n\nBase class for document storage\n\nsource\n\n\nDocumentStore\n\n DocumentStore\n                (documents:Union[List[nanorag.base.Document],nanorag.base.\n                Document]=[])\n\nKey value type document store that store documents by their id in a dictionary. Also checks for duplicates via hashing and doesn’t admit them. Compatible with both nodes and documents.\n\nsource\n\n\nPostgresDocumentStore\n\n PostgresDocumentStore (db_uri, table_name='documents')\n\nBase class for document storage",
+    "crumbs": [
+      "Store"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "nanorag",
+    "section": "",
+    "text": "Being a lightweight option of RAG, with just the necessary dependencies.\nFocused on RAG with local and open source models, not focused on API calls.\nTry out different strategies and data-structures that can be used to have better results. (Such as dataframes, can try out with polars as its really performant)\nMultimodal support, combine image, text and audio to get the best results\nSolve some of the storage challenges RAG faces, and provide good solutions for updating documents and embeddings as well as loading them.\nUse it as a educational library to demostrate on some of the main concepts llama-index or other RAG framworks use.\nThe base for the implementation of some agentic strategies I will try out on other library.\nOffer support for local models with CPU like llama-cpp",
+    "crumbs": [
+      "nanorag"
+    ]
+  },
+  {
+    "objectID": "index.html#library-objectives",
+    "href": "index.html#library-objectives",
+    "title": "nanorag",
+    "section": "",
+    "text": "Being a lightweight option of RAG, with just the necessary dependencies.\nFocused on RAG with local and open source models, not focused on API calls.\nTry out different strategies and data-structures that can be used to have better results. (Such as dataframes, can try out with polars as its really performant)\nMultimodal support, combine image, text and audio to get the best results\nSolve some of the storage challenges RAG faces, and provide good solutions for updating documents and embeddings as well as loading them.\nUse it as a educational library to demostrate on some of the main concepts llama-index or other RAG framworks use.\nThe base for the implementation of some agentic strategies I will try out on other library.\nOffer support for local models with CPU like llama-cpp",
+    "crumbs": [
+      "nanorag"
+    ]
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "nanorag",
+    "section": "Install",
+    "text": "Install\npip install nanorag",
+    "crumbs": [
+      "nanorag"
+    ]
+  },
+  {
+    "objectID": "index.html#learning",
+    "href": "index.html#learning",
+    "title": "nanorag",
+    "section": "Learning",
+    "text": "Learning\nYou can take a look at the notebooks to understand how it works.",
+    "crumbs": [
+      "nanorag"
+    ]
+  }
+]
